@@ -3,26 +3,28 @@ package com.example.OrderCoffeeBE.Model;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.persistence.Table;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
-
-@Entity
-@Data
+@AllArgsConstructor
 @NoArgsConstructor
+@Builder
+@Data
+@Getter
+@Setter
+@Entity
 @Table(name = "order_items")
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer  id;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
+    private long id;
+    @ManyToOne
+    @JoinColumn(name = "order_id")
     @JsonBackReference
     private Order order;
     @ManyToOne
-    @JoinColumn(name ="product_id", nullable = false)
+    @JoinColumn(name = "product_id")
     private Product product;
     private int quantity;
     private int subtotal;

@@ -32,7 +32,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product findById(int id) {
+    public Product findById(long id) {
         return productRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Product not found with id: " + id));
     }
@@ -57,7 +57,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public Product updateProduct(int id, ProductDTO productDTO, MultipartFile image) throws IOException {
+    public Product updateProduct(Long id, ProductDTO productDTO, MultipartFile image) throws IOException {
         if(productDTO == null)
         {
             throw new ResourceNotFoundException("Product is required");
@@ -90,7 +90,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void deleteProduct(int id) {
+    public void deleteProduct(long id) {
         var category = productRepository.findById(id).orElse(null);
         if (category == null) {
             throw new ResourceNotFoundException("Product not found");

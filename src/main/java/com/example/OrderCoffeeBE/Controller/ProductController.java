@@ -48,7 +48,7 @@ public class ProductController {
     @PatchMapping("/{id}")
     @ApiMessage("Update Product")
     public ResponseEntity<ProductResponse> updateProduct(
-            @PathVariable int id,
+            @PathVariable long id,
             @ModelAttribute ProductDTO updateProductDTO,
             @RequestParam(value = "image", required = false) MultipartFile image
     ) throws IOException {

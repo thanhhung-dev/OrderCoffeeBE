@@ -3,7 +3,7 @@ package com.example.OrderCoffeeBE.Service.impl;
 import com.example.OrderCoffeeBE.Dto.Order.OrderDTO;
 import com.example.OrderCoffeeBE.Dto.Order.PostOrderDTO;
 import com.example.OrderCoffeeBE.Model.Product;
-import com.example.OrderCoffeeBE.Dto.Order.PostOrderItemDTO;
+import com.example.OrderCoffeeBE.Dto.Order.OrderItemDTO;
 import com.example.OrderCoffeeBE.Model.Order;
 import com.example.OrderCoffeeBE.Model.OrderItem;
 import com.example.OrderCoffeeBE.Model.Tables;
@@ -51,17 +51,17 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus("Pending");
         order.setDeleted(0);
         int calculatedTotal = orderDTO.getItems().stream()
-                .mapToInt(PostOrderItemDTO::getSubtotal)
+                .mapToInt(OrderItemDTO::getSubtotal)
                 .sum();
         order.setTotal_amount(calculatedTotal);
         Order savedOrder = ordersRepository.save(order);
         List<OrderItem> orderItemsList = new ArrayList<>();
-        for (PostOrderItemDTO itemDTO : orderDTO.getItems()) {
+        for (OrderItemDTO itemDTO : orderDTO.getItems()) {
             OrderItem item = new OrderItem();
             item.setOrder(savedOrder);
             //Lay Thong Tin San Pham Tu Co So Du Lieu
-            Product product = productRepository.findById(itemDTO.getProduct_id())
-                            .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemDTO.getProduct_id()));
+            Product product = productRepository.findById(itemDTO.getProductId())
+                            .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + itemDTO.getProductId()));
             item.setProduct(product);
             item.setQuantity(itemDTO.getQuantity());
             item.setSubtotal(itemDTO.getSubtotal());
@@ -75,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
         return savedOrder;
     }
     @Override
-    public Order updateOrder(int id, OrderDTO orderDTO) {
+    public Order updateOrder(Long id, OrderDTO orderDTO) {
         Order order = ordersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order Not Found"));
         modelMapper.typeMap(OrderDTO.class,Order.class)
@@ -91,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order findById(int id) {
+    public Order findById(long id) {
         return ordersRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + id));
     }

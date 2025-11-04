@@ -9,8 +9,8 @@ import java.io.IOException;
 import java.util.List;
 public interface ProductService {
     List<Product> findAll();
-    Product findById(int id);
+    Product findById(long id);
     Product createProduct(PostProductDTO request ,MultipartFile image) throws IOException;
-    Product updateProduct(int id, ProductDTO product, MultipartFile image) throws IOException;
-    void deleteProduct(int id);
+    Product updateProduct(Long id, ProductDTO product, MultipartFile image) throws IOException;
+    void deleteProduct(long id);
 }

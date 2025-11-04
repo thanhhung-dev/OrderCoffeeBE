@@ -26,9 +26,9 @@ public class User {
     @Enumerated(EnumType.ORDINAL) // MALE = 0 , FEMALE 1
     private GenderEnum gender;
     private boolean isActive = true;
-    @ManyToOne()
-    @JoinColumn(name = "role_id", nullable = false)
-    private Role Role;
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
     @Override
     public String toString() {
         return "User{id=" + id + ", username='" + username + "', email='" + email + "'}";

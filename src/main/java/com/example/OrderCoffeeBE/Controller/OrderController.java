@@ -39,10 +39,9 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     @ApiMessage("Update a Order")
-    public ResponseEntity<Order> updateOrder(@PathVariable int id, @RequestBody OrderDTO order) {
-        order.setId(id);
+    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody OrderDTO order) {
         Order updateOrder = this.orderService.updateOrder(id, order);
         return ResponseEntity.status(HttpStatus.OK).body(updateOrder);
     }

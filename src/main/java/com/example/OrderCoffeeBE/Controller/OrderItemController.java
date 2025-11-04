@@ -1,11 +1,14 @@
 package com.example.OrderCoffeeBE.Controller;
 
+import com.example.OrderCoffeeBE.Dto.Order.OrderItemDTO;
 import com.example.OrderCoffeeBE.Model.OrderItem;
 import com.example.OrderCoffeeBE.Service.impl.OrderItemServiceImpl;
 import com.example.OrderCoffeeBE.Util.Anotation.ApiMessage;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,22 +27,23 @@ public class OrderItemController {
 
     @GetMapping("/{id}")
     @ApiMessage("Fetch By Id OrderItem")
-    public ResponseEntity<OrderItem> getOrderItemById(@PathVariable int id) {
-        return ResponseEntity.status(HttpStatus.OK).body(this.orderItemService.findOrderItemById(id));
+    public ResponseEntity<OrderItem> getOrderItemById(@Valid @PathVariable("id") Long id) {
+        OrderItem orderDetail = orderItemService.getOrderDetail(id);
+        return ResponseEntity.ok(orderDetail);
     }
 
     @PostMapping
     @ApiMessage("Create a OrderItem")
-    public ResponseEntity<OrderItem> createOrderItem(@RequestBody OrderItem orderItem) {
-        OrderItem newOrder = this.orderItemService.createOrderItem(orderItem);
+    public ResponseEntity<OrderItem> createOrderItem(@Valid @RequestBody OrderItemDTO orderItemDTO) {
+        OrderItem newOrder = this.orderItemService.createOrderItem(orderItemDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
     }
 
-    @PatchMapping("/{id}")
+    @PutMapping("/{id}")
     @ApiMessage("update OrderItem")
-    public ResponseEntity<OrderItem> updateOrderItem(@PathVariable int id, @RequestBody OrderItem orderItem) {
-        orderItem.setId(id);
-        OrderItem updatedOrderItem = orderItemService.updateOrderItem(orderItem);
+    public ResponseEntity<OrderItem> updateOrderItem(@Valid @RequestBody OrderItemDTO orderItemDTO,
+                                                     @PathVariable("id") Long id) {
+        OrderItem updatedOrderItem = orderItemService.updateOrderItem(id,orderItemDTO);
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrderItem);
     }
 

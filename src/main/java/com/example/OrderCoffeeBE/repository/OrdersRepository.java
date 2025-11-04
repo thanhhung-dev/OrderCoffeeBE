@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface OrdersRepository extends JpaRepository<Order, Integer> {
+public interface OrdersRepository extends JpaRepository<Order, Long> {
     @Modifying
     @Transactional
     @Query("UPDATE Order o SET o.deleted = 1 WHERE o.id = :orderId")

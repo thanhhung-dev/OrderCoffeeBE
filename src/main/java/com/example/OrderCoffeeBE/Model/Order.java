@@ -19,7 +19,7 @@ import java.util.List;
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer  id;
+    private long id;
     @JoinColumn(name = "table_id", nullable = false)
     @ManyToOne
     private Tables table;

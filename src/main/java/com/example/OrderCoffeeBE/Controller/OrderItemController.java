@@ -49,7 +49,7 @@ public class OrderItemController {
 
     @DeleteMapping("/{id}")
     @ApiMessage("Delete a OrderItem")
-    public ResponseEntity<String> deleteOrderItem(@PathVariable int id) {
+    public ResponseEntity<Void> deleteOrderItem(@PathVariable("id") Long id) {
         orderItemService.deleteOrderItem(id);
         return ResponseEntity.ok(null);
     }

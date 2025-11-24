@@ -14,6 +14,6 @@ public class OrderDTO {
     @JsonProperty("table_id")
     private int table_id;
     private String status;
-    private int totalAmount;
-    private List<OrderItemDTO> items;
+    private int total_amount;
+    List<OrderItemDTO> orderItemDTOS;
 }

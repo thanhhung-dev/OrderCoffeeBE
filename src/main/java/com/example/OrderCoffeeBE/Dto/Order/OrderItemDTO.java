@@ -12,7 +12,10 @@ public class OrderItemDTO {
     @JsonProperty("product_id")
     @Min(value = 1, message = MessageKeys.PRODUCT_ID_REQUIRED)
     private Long productId;
+
     private int quantity;
+    @JsonProperty("total_money")
+
     private int subtotal;
     private String notes;
 }

@@ -2,6 +2,7 @@ package com.example.OrderCoffeeBE.Controller;
 
 import com.example.OrderCoffeeBE.Dto.Order.OrderDTO;
 import com.example.OrderCoffeeBE.Dto.Order.PostOrderDTO;
+import com.example.OrderCoffeeBE.Dto.Order.PutOrderDTO;
 import com.example.OrderCoffeeBE.Model.Order;
 import com.example.OrderCoffeeBE.Service.impl.OrderServiceImpl;
 import com.example.OrderCoffeeBE.Util.Anotation.ApiMessage;
@@ -41,7 +42,7 @@ public class OrderController {
 
     @PutMapping("/{id}")
     @ApiMessage("Update a Order")
-    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody OrderDTO order) {
+    public ResponseEntity<Order> updateOrder(@PathVariable Long id, @RequestBody PutOrderDTO order) {
         Order updateOrder = this.orderService.updateOrder(id, order);
         return ResponseEntity.status(HttpStatus.OK).body(updateOrder);
     }

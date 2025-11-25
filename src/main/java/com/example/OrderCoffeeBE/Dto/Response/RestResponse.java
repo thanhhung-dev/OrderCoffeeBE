@@ -1,4 +1,4 @@
-package com.example.OrderCoffeeBE.Model.Res;
+package com.example.OrderCoffeeBE.Dto.Response;
 
 import lombok.Data;
 

@@ -1,6 +1,6 @@
 package com.example.OrderCoffeeBE.Util;
 
-import com.example.OrderCoffeeBE.Model.Res.RestResponse;
+import com.example.OrderCoffeeBE.Dto.Response.RestResponse;
 import com.example.OrderCoffeeBE.Util.Anotation.ApiMessage;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.core.MethodParameter;

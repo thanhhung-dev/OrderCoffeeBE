@@ -3,7 +3,7 @@ package com.example.OrderCoffeeBE.Controller;
 import com.example.OrderCoffeeBE.Dto.Product.PostProductDTO;
 import com.example.OrderCoffeeBE.Dto.Product.ProductDTO;
 import com.example.OrderCoffeeBE.Model.Product;
-import com.example.OrderCoffeeBE.Model.Res.ProductResponse;
+import com.example.OrderCoffeeBE.Dto.Response.ProductResponse;
 import com.example.OrderCoffeeBE.Service.impl.ProductServiceImpl;
 import com.example.OrderCoffeeBE.Util.Anotation.ApiMessage;
 import lombok.RequiredArgsConstructor;

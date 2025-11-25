@@ -10,10 +10,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class LoginRequest {
-    @NotBlank(message = "Username is required")
-    private String username;
-
-    @NotBlank(message = "Password is required")
-    private String password;
+public class ChatRequest {
+    @Builder.Default
+    private String title = "New Chat";
+    
+    private String description;
+    
+    @NotBlank(message = "Model name is required")
+    private String model; // Direct model name from Ollama
 }

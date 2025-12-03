@@ -31,7 +31,6 @@ Feature: Login Helper
       }
     }
     """
-
   # Trả về accessToken để feature khác sử dụng
     * def token = response.data.accessToken
     * def refreshToken = response.data.refreshToken

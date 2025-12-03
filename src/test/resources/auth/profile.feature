@@ -374,7 +374,7 @@ Feature: User Profile Management
   Scenario: TC_039 - PUT profile với JSON sai format
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
-    And request '{ "firstName": "Mike" '  # Missing closing brace
+    And request '{ "firstName": "Mike" '
     When method put
     Then status 400
     And match response.message == 'Malformed JSON request'
@@ -383,7 +383,7 @@ Feature: User Profile Management
   Scenario: TC_040 - Change-password với JSON sai format
     Given url baseUrl + changePasswordPath
     And header Authorization = 'Bearer ' + token
-    And request '{ currentPassword: "OldPass@123" '  # Missing closing brace
+    And request '{ currentPassword: "OldPass@123" '
     When method post
     Then status 400
     And match response.message == 'Malformed JSON request'

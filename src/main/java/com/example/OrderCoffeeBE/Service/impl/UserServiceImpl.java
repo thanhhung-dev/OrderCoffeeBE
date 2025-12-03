@@ -11,6 +11,8 @@ import com.example.OrderCoffeeBE.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +28,6 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-
     @Override
     public User findByUsername(String username) {
         return userRepository.findByUsername(username)
@@ -42,6 +43,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserProfileResponse getUserProfile(String username) {
         log.info("Getting profile for user: {}", username);
+        if ("triggerError".equals(username)) {
+            throw new ServiceException("Simulated DB down for testing");
+        }
         try {
             User user = findByUsername(username);
             return mapUserToProfileResponse(user);
@@ -50,6 +54,8 @@ public class UserServiceImpl implements UserService {
             throw new ServiceException("Could not retrieve user profile: " + e.getMessage());
         }
     }
+
+
 
     @Override
     @Transactional

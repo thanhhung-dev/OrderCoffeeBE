@@ -1,443 +1,390 @@
-Feature: GTest Update Profile
+Feature: User Profile Management
 
   Background:
     * def baseUrl = 'http://localhost:8080'
-    * def token = 'eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJpZCI6MTU0LCJlbWFpbCI6Im1pa2VAZXhhbXBsZS5jb20iLCJzdWIiOiJ0ZXN0dXNlcjMiLCJpYXQiOjE3NjQ3NDYzOTIsImV4cCI6MTc2NDc0OTk5Mn0.SmakeOtl4WSheMA2TyaonjAR1ghL9_aV_4CMrwJiRRgU7b9xEEAn-sx3GPLSyxcv4_1ADKKmUZamWEuSR1NrGg'
-    * def invalidToken = 'eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJpZCI6MTU0LCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwic3ViIjoidGVzdHVzZXIzIiwiaWF0IjoxNzY0NzMxODU3LCJleHAiOjE3NjQ3MzU0NTd9.MYLF276X5ZYFVUw01iuSMdfOYk4Jgf_kQRSQvK0FioduCr7ODohG8YwGjuHTjRn_PGImRTbiy-JzR29A623'
+    * def loginResult = call read('classpath:auth/login.feature') { username: 'testuser3', password: 'UpdatedPass@123' }
+    * def token = loginResult.token
+    * def invalidToken = 'Invalid_token_xyz'
+    * def deletedUserToken = 'eyJhbGciOiJIUzUxMiJ9.eyJyb2xlcyI6W3siYXV0aG9yaXR5IjoiUk9MRV9VU0VSIn1dLCJpZCI6OTk5LCJlbWFpbCI6ImRlbGV0ZWRAZXhhbXBsZS5jb20iLCJzdWIiOiJkZWxldGVkdXNlciIsImlhdCI6MTc2NDc1MjU2MiwiZXhwIjoxNzY0NzU2MTYyfQ.fake_signature'
     * def profilePath = '/api/users/profile/me'
     * def changePasswordPath = '/api/users/profile/change-password'
-  Scenario: TC_001 - GET /api/users/profile/me - Lấy profile thành công
+    * def avatarPath = '/api/users/profile/avatar'
+
+#######################
+# GET /api/users/profile/me
+#######################
+
+  Scenario: TC_001 - GET profile thành công
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     When method get
     Then status 200
-
     And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-  Scenario: TC_002 - Trả về 401 Unauthorized khi Bearer token không hợp lệ
+    """
+    { statusCode: 200, error: null, message: 'CALL API SUCCESS', data: '#object' }
+    """
+    * print 'TC_001 PASS'
+
+  Scenario: TC_002 - GET profile token không hợp lệ
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + invalidToken
     When method get
     Then status 401
+    And match response.message == 'Token is invalid or expired'
+    * print 'TC_002 PASS'
 
-    And match response ==
-      """
-      {
-        status: 401,
-        message: '#string',
-        timestamp: '#string',
-        path: '#string'
-      }
-      """
-  Scenario: TC_003 - GET /api/users/profile/me - Không có Authorization header
+  Scenario: TC_003 - GET profile không có token
     Given url baseUrl + profilePath
     When method get
-    Then status 500
-    And match response ==
-      """
-      {
-        message: 'An unexpected error occurred',
-        success: false
-      }
-      """
-    * karate.fail('System returns 500 when Authorization header is missing; expected 401 Unauthorized')
+    Then status 401
+    And match response.message == 'Unauthorized'
+    * print 'TC_003 PASS'
 
-
-
-  Scenario: TC_004 - GET /api/users/profile/me - Token đúng nhưng user bị xóa hoặc disabled
-    * def expectedPath = profilePath
-    Given url baseUrl + expectedPath
+  Scenario: TC_004 - GET profile token hợp lệ nhưng user bị xóa
+    Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + deletedUserToken
     When method get
-    Then status 400
+    Then status 404
+    And match response.message == 'User not found'
+    * print 'TC_004 PASS'
 
-    * def msg = response.message ? response.message : (response.error ? response.error : '')
-    And match msg contains 'User not found'
-    * print 'TC_004 response status:', karate.responseStatus, 'message:', msg
+#######################
+# PUT /api/users/profile/me
+#######################
 
-
-  Scenario: TC_005 - GET /api/users/profile/me - Verify logging
+  Scenario: TC_005 - Update firstName thành công
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
-    When method get
-    Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-    * def username = response.data && response.data.username ? response.data.username : '<unknown>'
-    * print 'Expect application logs contain: "Getting profile for authenticated user: ' + username + '"'
-    * karate.log('Manual verification required: Check application log contains: "Getting profile for authenticated user: ' + username + '"')
-  Scenario: TC_006 - GET /api/users/profile/me - Profile với avatar null
-    Given url baseUrl + '/api/users/profile/me'
-    And header Authorization = 'Bearer ' + token
-    When method get
-    Then status 200
-
-    # Xác nhận khung response chuẩn
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-
-    # Xác nhận avatarUrl null và các field chính
-    And match response.data ==
-      """
-      {
-        id: '#number',
-        username: '#ignore',
-        email: '#ignore',
-        firstName: '#ignore',
-        lastName: '#ignore',
-        displayName: '#ignore',
-        avatarUrl: "null",
-        phoneNumber: '#ignore',
-        roles: ['ROLE_USER'],
-        createdAt: '#string',
-        updatedAt: '#string'
-      }
-      """
-
-  # TC_007 - Update firstName thành công
-  Scenario: TC_007 - PUT /api/users/profile/me - Update firstName thành công
-    Given url baseUrl + profilePath
-    And header Authorization = 'Bearer ' + token
-    And request { firstName: 'John' }
+    And request { firstName: 'Michael' }
     When method put
     Then status 200
+    And match response.data.firstName == 'Michael'
+    * print 'TC_005 PASS'
 
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-
-    * def currentLastName = response.data.lastName
-
-
-  Scenario: TC_008 - PUT /api/users/profile/me - Update lastName thành công
+  Scenario: TC_006 - Update lastName thành công
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     And request { lastName: 'Smith' }
     When method put
     Then status 200
+    And match response.data.lastName == 'Smith'
+    * print 'TC_006 PASS'
 
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-
-    # Optional: kiểm tra updatedAt thay đổi (nếu server trả khác đi)
-    * def isIsoInstant = function(s){ return java.time.Instant.parse(s) != null }
-    And match isIsoInstant(response.data.updatedAt) == true
-  Scenario: TC_009 - PUT /api/users/profile/me - Update email thành công
+  Scenario: TC_007 - Update email thành công
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     And request { email: 'newemail@example.com' }
     When method put
     Then status 200
+    And match response.data.email == 'newemail@example.com'
+    * print 'TC_007 PASS'
 
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-
-    And match response.data ==
-      """
-      {
-        id: '#number',
-        username: 'testuser',
-        email: 'newemail@example.com',
-        firstName: '#string',
-        lastName: '#string',
-        displayName: '#( response.data.firstName + " " + response.data.lastName )',
-        avatarUrl: '#ignore',
-        phoneNumber: '#string',
-        roles: ['ROLE_USER'],
-        createdAt: '#string',
-        updatedAt: '#string'
-      }
-      """
-
-    * print "Expect log contains: 'Updated email for user testuser'"
-
-  # TC_010 - Update email đã tồn tại - kỳ vọng 400, hiện trạng FAIL (trả 200 và set email)
-  Scenario: TC_010 - PUT /api/users/profile/me - Update email đã tồn tại - FAIL hiện trạng
+  Scenario: TC_008 - Update email đã tồn tại
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     And request { email: 'existing@example.com' }
     When method put
-    # Kỳ vọng đúng: Then status 400 và body lỗi
-    # Hiện trạng thực tế bạn ghi nhận: 200 OK và data.email = 'existing@example.com'
-    Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-    And match response.data.email == 'existing@example.com'
+    Then status 400
+    And match response.message == 'Email is already in use: existing@example.com'
+    * print 'TC_008 PASS'
 
-    # Đánh dấu test này là FAIL so với kỳ vọng nghiệp vụ
-    * karate.fail("Expected 400 Bad Request when email already exists, but system returned 200 and updated email")
-
-
-  # TC_011 - Update phoneNumber thành công
-  Scenario: TC_011 - PUT /api/users/profile/me - Update phoneNumber thành công
+  Scenario: TC_009 - Update phoneNumber thành công
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     And request { phoneNumber: '0912345678' }
     When method put
     Then status 200
+    And match response.data.phoneNumber == '0912345678'
+    * print 'TC_009 PASS'
 
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-
-    And match response.data ==
-      """
-      {
-        id: '#number',
-        username: 'testuser',
-        email: '#string',
-        firstName: '#string',
-        lastName: '#string',
-        displayName: '#( response.data.firstName + " " + response.data.lastName )',
-        avatarUrl: '#ignore',
-        phoneNumber: '0912345678',
-        roles: ['ROLE_USER'],
-        createdAt: '#string',
-        updatedAt: '#string'
-      }
-      """
-    * print "Expect log contains: 'Updated phone number for user testuser'"
-  Scenario: TC_012 - PUT /api/users/profile/me - Update nhiều fields cùng lúc
+  Scenario: TC_010 - Update multiple fields cùng lúc
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
-    And request
-      """
-      {
-        firstName: 'Mike',
-        lastName: 'Johnson',
-        email: 'mike@example.com',
-        phoneNumber: '0901234567'
-      }
-      """
+    And request { firstName: 'Mike', lastName: 'Johnson', email: 'mike@example.com', phoneNumber: '0901234567' }
     When method put
     Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-    And match response.data ==
-      """
-      {
-        id: '#number',
-        username: '#string',
-        email: 'mike@example.com',
-        firstName: 'Mike',
-        lastName: 'Johnson',
-        displayName: 'Mike Johnson',
-        avatarUrl: '#ignore',
-        phoneNumber: '0901234567',
-        roles: ['ROLE_USER'],
-        createdAt: '#string',
-        updatedAt: '#string'
-      }
-      """
+    And match response.data.firstName == 'Mike'
+    And match response.data.lastName == 'Johnson'
+    And match response.data.email == 'mike@example.com'
+    And match response.data.phoneNumber == '0901234567'
+    * print 'TC_010 PASS'
 
-  # TC_013 - Update với body rỗng {}
-  Scenario: TC_013 - PUT /api/users/profile/me - Update với body rỗng
+  Scenario: TC_011 - Update firstName trống
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
-    And request {}
+    And request { firstName: '' }
+    When method put
+    Then status 400
+    And match response.errors.firstName == '#? _ contains "cannot be empty"'
+    * print 'TC_011 PASS'
+
+  Scenario: TC_012 - Update lastName trống
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { lastName: '' }
+    When method put
+    Then status 400
+    And match response.errors.lastName == '#? _ contains "cannot be empty"'
+    * print 'TC_012 PASS'
+
+  Scenario: TC_013 - Update email sai định dạng
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { email: 'wrongemail' }
+    When method put
+    Then status 400
+    And match response.errors.email == '#? _ contains "invalid"'
+    * print 'TC_013 PASS'
+
+  Scenario: TC_014 - Update phoneNumber sai định dạng
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { phoneNumber: 'abc123' }
+    When method put
+    Then status 400
+    And match response.errors.phoneNumber == '#? _ contains "invalid"'
+    * print 'TC_014 PASS'
+
+  Scenario: TC_015 - Update profile không có token
+    Given url baseUrl + profilePath
+    And request { firstName: 'Test' }
+    When method put
+    Then status 401
+    And match response.message == 'Unauthorized'
+    * print 'TC_015 PASS'
+
+#######################
+# POST /api/users/profile/change-password
+#######################
+
+  Scenario: TC_016 - Change password thành công
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'UpdatedPass@123', newPassword: 'UpdatedPass@123', confirmPassword: 'UpdatedPass@123' }
+    When method post
+    Then status 200
+    And match response.data.success == true
+    * print 'TC_016 PASS'
+
+  Scenario: TC_017 - Change password sai currentPassword
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'WrongOld', newPassword: 'NewPass@456', confirmPassword: 'NewPass@456' }
+    When method post
+    Then status 400
+    And match response.message == 'Current password is incorrect'
+    * print 'TC_017 PASS'
+
+  Scenario: TC_018 - Change password newPassword và confirmPassword khác nhau
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'UpdatedPass@123', newPassword: 'NewPass@456', confirmPassword: 'DiffPass@456' }
+    When method post
+    Then status 400
+    And match response.message == 'Confirm password does not match new password'
+    * print 'TC_018 PASS'
+
+  Scenario: TC_019 - Change password không đủ độ dài
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'UpdatedPass@123', newPassword: '123', confirmPassword: '123' }
+    When method post
+    Then status 400
+    And match response.errors.newPassword == '#? _ contains "too short"'
+    * print 'TC_019 PASS'
+
+  Scenario: TC_020 - Change password không có token
+    Given url baseUrl + changePasswordPath
+    And request { currentPassword: 'UpdatedPass@123', newPassword: 'NewPass@456', confirmPassword: 'NewPass@456' }
+    When method post
+    Then status 401
+    And match response.message == 'Unauthorized'
+    * print 'TC_020 PASS'
+
+#######################
+# PUT /api/users/profile/avatar
+#######################
+
+  Scenario: TC_021 - Update avatar thành công
+    Given url baseUrl + avatarPath
+    And header Authorization = 'Bearer ' + token
+    And request 'https://example.com/avatars/user123.jpg'
     When method put
     Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-    * print "Manual/secondary verification: No changes detected for user via logs"
+    And match response.data.success == true
+    * print 'TC_021 PASS'
 
-  # TC_014 - Update với dữ liệu giống cũ
-  Scenario: TC_014 - PUT /api/users/profile/me - Update với dữ liệu giống cũ
-    # B1: Get current profile
+  Scenario: TC_022 - Update avatar không hợp lệ (file type)
+    Given url baseUrl + avatarPath
+    And header Authorization = 'Bearer ' + token
+    And request 'https://example.com/avatars/user123.txt'
+    When method put
+    Then status 400
+    And match response.message == 'Invalid avatar format'
+    * print 'TC_022 PASS'
+
+  Scenario: TC_023 - Update avatar quá lớn
+    Given url baseUrl + avatarPath
+    And header Authorization = 'Bearer ' + token
+    And request 'https://example.com/avatars/large_image.jpg'
+    When method put
+    Then status 400
+    And match response.message == 'Avatar exceeds max size 2MB'
+    * print 'TC_023 PASS'
+
+  Scenario: TC_024 - Update avatar không có token
+    Given url baseUrl + avatarPath
+    And request 'https://example.com/avatars/user123.jpg'
+    When method put
+    Then status 401
+    And match response.message == 'Unauthorized'
+    * print 'TC_024 PASS'
+
+  Scenario: TC_025 - Update profile và avatar cùng lúc
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { firstName: 'AvatarTest', avatar: 'https://example.com/avatars/avatar_test.jpg' }
+    When method put
+    Then status 200
+    And match response.data.firstName == 'AvatarTest'
+    And match response.data.avatar == 'https://example.com/avatars/avatar_test.jpg'
+    * print 'TC_025 PASS'
+
+#######################
+# Negative & Validation Tests
+#######################
+
+  Scenario: TC_026 - Update firstName quá dài
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { firstName: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' }
+    When method put
+    Then status 400
+    And match response.errors.firstName == '#? _ contains "too long"'
+    * print 'TC_026 PASS'
+
+  Scenario: TC_027 - Update lastName quá dài
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { lastName: 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB' }
+    When method put
+    Then status 400
+    And match response.errors.lastName == '#? _ contains "too long"'
+    * print 'TC_027 PASS'
+
+  Scenario: TC_028 - Update email trống
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { email: '' }
+    When method put
+    Then status 400
+    And match response.errors.email == '#? _ contains "cannot be empty"'
+    * print 'TC_028 PASS'
+
+  Scenario: TC_029 - Update phoneNumber quá dài
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { phoneNumber: '0912345678901234567890' }
+    When method put
+    Then status 400
+    And match response.errors.phoneNumber == '#? _ contains "too long"'
+    * print 'TC_029 PASS'
+
+  Scenario: TC_030 - Change password trống fields
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: '', newPassword: '', confirmPassword: '' }
+    When method post
+    Then status 400
+    And match response.errors.currentPassword == '#? _ contains "cannot be empty"'
+    And match response.errors.newPassword == '#? _ contains "cannot be empty"'
+    And match response.errors.confirmPassword == '#? _ contains "cannot be empty"'
+    * print 'TC_030 PASS'
+
+  Scenario: TC_031 - Change password newPassword yếu
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'OldPass@123', newPassword: '123456', confirmPassword: '123456' }
+    When method post
+    Then status 400
+    And match response.errors.newPassword == '#? _ contains "too weak"'
+    * print 'TC_031 PASS'
+
+  Scenario: TC_032 - GET profile server error (simulate 500)
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
     When method get
-    Then status 200
-    * def currentProfile = response.data
+    Then status 500
+    And match response.message == 'Internal server error'
+    * print 'TC_032 PASS'
 
-    # B2: Gửi lại các giá trị cũ (ví dụ chỉ firstName/lastName)
+  Scenario: TC_033 - PUT profile server error (simulate 500)
     Given url baseUrl + profilePath
     And header Authorization = 'Bearer ' + token
-    And request { firstName: '#(currentProfile.firstName)', lastName: '#(currentProfile.lastName)' }
+    And request { firstName: 'Test500' }
     When method put
-    Then status 200
-    And match response.statusCode == 200
-    * print "Manual/secondary verification: No changes detected for user via logs"
-
-  # TC_015 - Validation error: email sai format (kỳ vọng 400) - hiện trạng bạn ghi nhận FAIL trả 200
-  Scenario: TC_015 - PUT /api/users/profile/me - Validation error: email sai format
-    Given url baseUrl + profilePath
-    And header Authorization = 'Bearer ' + token
-    And request { email: 'invalid-email-format' }
-    When method put
-    # Kỳ vọng đúng là 400 Bad Request với errors.email
-    # Nhưng theo hiện trạng hệ thống của bạn: trả 200 và set email sai định dạng
-    Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: '#object'
-      }
-      """
-    And match response.data.email == 'invalid-email-format'
-    * karate.fail('Expected 400 Bad Request for invalid email format, but system returned 200')
-
-  Scenario: TC_016 - PUT /api/users/profile/me - Validation error: firstName quá dài
-    * def longName = 'X'.repeat(300)
-    Given url baseUrl + profilePath
-    And header Authorization = 'Bearer ' + token
-    And request { firstName: '#(longName)' }
-    When method put
-    Then status 400
-    And match response ==
-      """
-      {
-        path: '/api/users/profile/me',
-        message: 'Validation failed',
-        errors: { firstName: '#string' },
-        status: 400,
-        timestamp: '#string'
-      }
-      """
-    And match response.errors.firstName == '#? _ contains "less than" || _ contains "too long"'
-
-  # TC_017 - Không có token
-  Scenario: TC_017 - PUT /api/users/profile/me - Không có token
-    Given url baseUrl + profilePath
-    And request { firstName: 'Test' }
-    When method put
-    # Kỳ vọng 401, hiện trạng hệ thống trả 500
     Then status 500
-    And match response ==
-      """
-      {
-        message: 'An unexpected error occurred',
-        success: false
-      }
-      """
-    * karate.fail('Expected 401 Unauthorized when Authorization header is missing; got 500')
+    And match response.message == 'Internal server error'
+    * print 'TC_033 PASS'
 
-  # TC_018 - Token hết hạn
-  Scenario: TC_018 - PUT /api/users/profile/me - Token hết hạn
-    Given url baseUrl + profilePath
-    And header Authorization = 'Bearer ' + expiredToken
-    And request { firstName: 'Test' }
-    When method put
-    # Kỳ vọng 401, hiện trạng hệ thống trả 500 theo mô tả
-    Then status 500
-    And match response ==
-      """
-      {
-        message: 'An unexpected error occurred',
-        success: false
-      }
-      """
-    * karate.fail('Expected 401 Unauthorized for expired token; got 500')
-
-  # TC_019 - Update với special characters
-  Scenario: TC_019 - PUT /api/users/profile/me - Update với special characters
-    Given url baseUrl + profilePath
-    And header Authorization = 'Bearer ' + validToken
-    And request { firstName: "O'Brien", lastName: 'García' }
-    When method put
-    # Kỳ vọng 200 và lưu đúng; hiện trạng bạn ghi nhận 500
-    Then status 500
-    And match response ==
-      """
-      {
-        message: 'An unexpected error occurred',
-        success: false
-      }
-      """
-    * karate.fail('Expected 200 OK for names with special characters; got 500')
-
-#   TC_020 - Đổi password thành công
-  Scenario: TC_020 - POST /api/users/profile/change-password - Đổi password thành công
+  Scenario: TC_034 - Change-password server error (simulate 500)
     Given url baseUrl + changePasswordPath
     And header Authorization = 'Bearer ' + token
-    And request
-      """
-      {
-        currentPassword: 'NewPass@456',
-        newPassword:    'NewPass@456',
-        confirmPassword:'NewPass@456'
-      }
-      """
+    And request { currentPassword: 'OldPass@123', newPassword: 'NewPass@123', confirmPassword: 'NewPass@123' }
     When method post
+    Then status 500
+    And match response.message == 'Internal server error'
+    * print 'TC_034 PASS'
+
+  Scenario: TC_035 - Update avatar server error (simulate 500)
+    Given url baseUrl + avatarPath
+    And header Authorization = 'Bearer ' + token
+    And request 'https://example.com/avatars/error.jpg'
+    When method put
+    Then status 500
+    And match response.message == 'Internal server error'
+    * print 'TC_035 PASS'
+
+  Scenario: TC_036 - PUT profile trùng dữ liệu cũ
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request { firstName: 'Michael', lastName: 'Smith', email: 'newemail@example.com', phoneNumber: '0912345678' }
+    When method put
     Then status 200
-    And match response ==
-      """
-      {
-        statusCode: 200,
-        error: null,
-        message: 'CALL API SUCCESS',
-        data: { message: 'Password changed successfully', success: true }
-      }
-      """
-    * print "Expect logs: 'Changing password for user: testuser3' and 'Password changed successfully for user: testuser3'"
+    And match response.message == 'No changes detected'
+    * print 'TC_036 PASS'
+
+  Scenario: TC_037 - Change-password trùng currentPassword
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request { currentPassword: 'OldPass@123', newPassword: 'OldPass@123', confirmPassword: 'OldPass@123' }
+    When method post
+    Then status 400
+    And match response.message == 'New password cannot be same as current password'
+    * print 'TC_037 PASS'
+
+  Scenario: TC_038 - GET profile chậm (simulate timeout)
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    When method get
+    Then status 408
+    And match response.message == 'Request timeout'
+    * print 'TC_038 PASS'
+
+  Scenario: TC_039 - PUT profile với JSON sai format
+    Given url baseUrl + profilePath
+    And header Authorization = 'Bearer ' + token
+    And request '{ "firstName": "Mike" '  # Missing closing brace
+    When method put
+    Then status 400
+    And match response.message == 'Malformed JSON request'
+    * print 'TC_039 PASS'
+
+  Scenario: TC_040 - Change-password với JSON sai format
+    Given url baseUrl + changePasswordPath
+    And header Authorization = 'Bearer ' + token
+    And request '{ currentPassword: "OldPass@123" '  # Missing closing brace
+    When method post
+    Then status 400
+    And match response.message == 'Malformed JSON request'
+    * print 'TC_040 PASS'

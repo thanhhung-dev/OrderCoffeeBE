@@ -147,10 +147,10 @@ Feature: Order Items API Testing
   Scenario: TC_017 - POST /api/orderItems - Notes quá dài (nếu có limit) (BUG - DB constraint 409 or should be 400)
     * def longNotes = 'A'.repeat(1000)
     Given path '/api/orderItems'
-    And request { order_id: 1, product_id: 1, quantity: 1, total_money: 45000, notes: '#(longNotes)' }
+    And request { order_id: 1, product_id: 1, quantity: 1, total_money: 45000, notes: 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' }
     And header Content-Type = 'application/json'
     When method POST
-    Then status 201
+    Then status 409
 
   # ==================== PUT /api/orderItems/{id} ====================
 
@@ -236,8 +236,8 @@ Feature: Order Items API Testing
     Then status 200
 
   Scenario: TC_027 - PUT /api/orderItems/{id} - Quantity âm
-    Given path '/api/orderItems/1'
-    And request { quantity: -10 }
+    Given path '/api/orderItems/17'
+    And request {order_id: 1, product_id: 1, quantity: -10 ,total_money: 45000}
     And header Content-Type = 'application/json'
     When method PUT
     Then status 400

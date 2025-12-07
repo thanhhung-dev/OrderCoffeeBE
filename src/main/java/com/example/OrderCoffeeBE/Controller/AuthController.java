@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-//http:localhost:8080/api/auth/login
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
@@ -167,4 +166,5 @@ public class AuthController {
         }
         return xfHeader.split(",")[0];
     }
+
 }

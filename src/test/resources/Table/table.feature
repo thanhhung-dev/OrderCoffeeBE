@@ -4,11 +4,6 @@ Feature: Table API Testing - 40 Test Cases
     * url baseUrl = 'http://localhost:8080'
     * header Content-Type = 'application/json'
 
-
-  #######################################################################
-  # GET ALL TABLES (10 test cases)
-  #######################################################################
-
   Scenario: TC_TAB_001 - GET all tables - Success
     Given path '/api/table'
     When method GET
@@ -64,11 +59,6 @@ Feature: Table API Testing - 40 Test Cases
     And header authorization = 'Bearer token'
     When method GET
     Then status 200
-
-
-  #######################################################################
-  # GET TABLE BY ID (15 test cases)
-  #######################################################################
 
   Scenario: TC_TAB_011 - GET table by valid ID
     Given path '/api/table/1'
@@ -149,11 +139,6 @@ Feature: Table API Testing - 40 Test Cases
     When method GET
     Then status 200
 
-
-  #######################################################################
-  # POST CREATE TABLE (10 test cases)
-  #######################################################################
-
   Scenario: TC_TAB_026 - POST create table - Success
     Given path '/api/table'
     And request { status: 'Available' }
@@ -214,11 +199,6 @@ Feature: Table API Testing - 40 Test Cases
     And request { status: 'テーブル' }
     When method POST
     Then status 201 || status 500
-
-
-  #######################################################################
-  # DELETE TABLE (5 test cases)
-  #######################################################################
 
   Scenario: TC_TAB_036 - DELETE table - Success
     Given path '/api/table'

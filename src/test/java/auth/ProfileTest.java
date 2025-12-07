@@ -2,10 +2,9 @@ package auth;
 
 import com.intuit.karate.junit5.Karate;
 
-class LoginTest {
-
+public class ProfileTest {
     @Karate.Test
     Karate testLogin() {
-        return Karate.run("login").relativeTo(getClass());
+        return Karate.run("profile").relativeTo(getClass());
     }
 }

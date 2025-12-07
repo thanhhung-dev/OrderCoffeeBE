@@ -72,7 +72,6 @@ public class UserProfileController {
     }
 
     @PostMapping("/change-password")
-
     public ResponseEntity<?> changePassword(
             Authentication authentication,
             @Valid @RequestBody ChangePasswordRequest request) {

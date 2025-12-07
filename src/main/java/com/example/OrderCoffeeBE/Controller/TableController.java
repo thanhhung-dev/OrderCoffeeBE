@@ -25,7 +25,6 @@ public class TableController {
     public ResponseEntity<Tables> getTableById(@PathVariable int id) {
         return ResponseEntity.status(HttpStatus.OK).body(this.tableService.findById(id));
     }
-    @PostMapping
     @ApiMessage("Create a Table")
     public ResponseEntity<Tables> addTable(@RequestBody Tables tables) {
         Tables newTables = this.tableService.createTable(tables);

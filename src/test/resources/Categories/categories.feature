@@ -4,10 +4,6 @@ Feature: Category API Testing - 40 Test Cases
     * url 'http://localhost:8080'
     * header Content-Type = 'application/json'
 
-  ##############################################################
-  # GET ALL CATEGORIES (10 TEST CASES)
-  ##############################################################
-
   Scenario: TC_CAT_001 - GET all categories - Success
     Given path 'api/categories'
     When method GET
